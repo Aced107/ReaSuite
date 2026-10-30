@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<index version="1" name="ReaSuite">
+  <category name="Extensions">
+    <reapack name="ReaSuite" type="extension" desc="ReaSuite: ReaFL (FL Studio Playlist tools) and more modules in one extension">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin}: Windows only, coming soon (greyed out on macOS and Linux).\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
+        <link rel="website">https://github.com/Aced107/ReaSuite</link>
+      </metadata>
+      <version name="0.5.0" author="Armaan" time="2026-10-30T18:29:13Z">
+        <changelog><![CDATA[### ReaFL: core 5 tools
+
+- ReaFL keeps only the core tools: **Draw, Paint, Delete, Mute, Slice**. **Slip, Select and
+  Playback** are archived like Zoom (no action, shortcut or toolbar button; code kept behind
+  flags in `tools/catalog.cpp`). An older install's shortcuts and buttons for them are removed
+  at startup.
+- New tool order: 1 Default (REAPER's normal tool, the start tool), 2 Draw, 3 Paint,
+  4 Delete, 5 Mute, 6 Slice. An existing ReaFL toolbar is re-sorted into this order once.
+  Letter keys unchanged (1, P, B, D, T, C).
+- Slice: FL's diagonal (slanted-line) Shift+drag slice is skipped for now; Shift+drag is a
+  plain cut (`kDiagonalSliceSkipped` in `tools/slice.cpp`).
+- Install through ReaPack again: `https://raw.githubusercontent.com/Aced107/ReaSuite/main/index.xml`.
+
+
+### ReaSuite
+
+- Settings window: ReaSkin is labelled **"(Windows only)"** on macOS and Linux instead of
+  "(coming soon)" (Windows keeps "(coming soon)" until it lands). New optional
+  `Module::unavailableLabel`; `test_modules.lua` checks the checkbox texts.
+- ReaFL becomes **ReaSuite**: one extension (`reaper_reasuite-x64.dll`,
+  `reaper_reasuite.dylib`, `reaper_reasuite-x86_64.so`, `reaper_reasuite-aarch64.so`) with
+  switchable modules. ReaFL is the first module (on by default); ReaSkin is listed greyed out:
+  "(Windows only)" on macOS and Linux, "(coming soon)" on Windows until it lands.
+- New **ReaSuite Settings** window (action `ReaSuite: Settings...`, Extensions menu): one
+  checkbox per module, saved in `reaper-reasuite.ini` (`[modules] reafl=1`). Changes take
+  effect after restarting REAPER. A turned-off ReaFL keeps its actions (they say it is off),
+  so shortcuts and the toolbar survive; nothing else of ReaFL runs.
+- Compatible with ReaFL 0.3.0 setups: same action IDs and names (except Zoom, archived), toolbar and
+  `reaper-reafl.ini`. If the old ReaFL extension is still installed, ReaSuite doesn't start
+  its ReaFL module (nothing registered twice) and asks once per start to uninstall the old
+  package in ReaPack.
+- ReaScript: `ReaSuite_GetVersion`, `ReaSuite_ListModules`, `ReaSuite_GetModuleState`,
+  `ReaSuite_GetModuleEnabled`, `ReaSuite_SetModuleEnabled`.
+- Shared arrange-area input in the core: REAPER's track area (and ruler) is subclassed once
+  and modules add ordered message and wheel handlers (`<reasuite/arrange.h>`), so
+  modules can't conflict; ReaFL's tools are now one handler in that chain (no behaviour
+  change). Module guide: docs/MODULE-INTERFACE.md.
+- Settings window: module notes word-wrap to the label width (measured with the window's
+  font) and the rows and window grow to fit, so the long "old ReaFL extension is installed"
+  note is no longer cut off (ReaTester2 c-run2-10). Test API `ReaSuite_Test_SettingsNotes`.
+- Tests: `tests/layout/apply_layout.py` is a shim for the GUI test layout script, which
+  now lives in `modules/reafl/tests/layout/` (the docs pointed at the old path).
+- Tests: `tests/module_toggle.sh` finds its REAPER by executable path (not the working
+  directory), starts it with `-cfgfile <resource dir>/reaper.ini`, and keeps its temp files
+  in `$TMPDIR`.
+
+### Timeline Interactions module (new)
+
+- New module **Timeline Interactions** (`interactions`, on by default): a data-driven table of
+  DAW mouse-wheel presets for the arrange view, chosen in its settings page (ReaSuite
+  Settings > Timeline Interactions > Settings...), saved in `reaper-reasuite.ini`, applied when
+  REAPER restarts (the page says so; no supported API adds a shortcut live).
+  - **Old Setup** (default) = your setup before switching (custom bindings included), not
+    stock REAPER: the wheel shortcuts and wheel preferences FL Studio changes are recorded
+    exactly (including "absent") in `[old_setup]`, atomically, before anything is applied, and
+    restored exactly; changes you make yourself while FL Studio is on are kept and listed.
+    Crash-safe at every step (SIGKILL after the snapshot, after the shortcut write, mid-restore,
+    while FL is on).
+  - **FL Studio**, native: REAPER's own main-section mousewheel shortcuts (plain = 989 Scroll
+    vertically, Shift = 977 Scroll horizontally reversed, Ctrl and Ctrl+Alt = a custom action
+    "ReaSuite Timeline Interactions - FL zoom horizontally" = Modify mousewheel 0.5x, -10%,
+    990 Zoom horizontally: x1.17 per notch at the mouse as verified in FL, Alt = 1000 Zoom
+    vertically, all tracks as verified in FL) and zoom centres = mouse (`zoommode` /
+    `vzoommode` = 3, in memory only). MIDI editor, mouse modifiers and other prefs untouched.
+    No wheel hook at all (the hook engine and its hidden test preset were removed); step sizes
+    are REAPER's own (FL's functionality, not its exact steps), except Ctrl / Ctrl+Alt zoom,
+    which uses the custom action `_REASUITE_INT_FL_ZOOM_H` at about x1.17 per notch (matching
+    FL). Native limits (the ruler gets
+    the same bindings, the zoom-centre pref is global) and what is unverified in FL
+    (Shift+wheel, the ruler) in `modules/interactions/docs/design.md`.
+  - A failed write of `reaper-kb.ini` or of the snapshot changes nothing: Old stays and the
+    next start tries again.
+  - Turning the module off restores Old Setup at the next start; the FL choice stays saved.
+  - The settings page note wraps to its label with the window font and the page grows to fit
+    (it was clipped after "scroll / left/right"); the ReaSuite Settings module note keeps
+    "(running)" (it was cut off).
+  - ReaScript: `Interactions_GetPreset`, `Interactions_GetActivePreset`,
+    `Interactions_SetPreset`, `Interactions_ListPresets`.
+  - Tested on Linux (in-session suite plus `native_setup.py` across restarts with real wheel
+    events); Windows and macOS not run.
+
+### ReaFL module
+
+- **Zoom tool archived; use REAPER's zoom / Timeline Interactions** (Ctrl+wheel, the zoom
+  actions, Preferences > Mouse modifiers). The tool is no longer registered: no action,
+  shortcut, toolbar button, toggle, hint or cycling slot. At startup ReaFL removes an older
+  install's Zoom shortcut (`reaper-kb.ini`), its toolbar buttons in every toolbar
+  (`reaper-menu.ini`, the other buttons renumbered), its toolbar icons and cursor file, and
+  `zoom` from the offered lists in `reaper-reafl.ini`, and notes it in `ReaFL/reafl.log` only (no console window over the arrange view; b4 opened one, fixed in b4.1, checked by `archived_restart.sh`); a
+  saved Zoom state starts in the Default tool. The code stays behind one flag
+  (`kZoomToolArchived` in `src/tools/catalog.cpp`). Zoom tests are skipped with "archived";
+  new `test_archived.lua` and `tests/archived_restart.sh`. FL's Zoom (including the Q6
+  modifier results) stays documented in `docs/fl-tools-reference.md`.
+- README: Install no longer promises a live ReaPack index (it still returns 404): manual
+  install into `UserPlugins` is the current method, ReaPack once published.
+- Docs: `fl-tools-reference.md` has a new "Implemented but unverified in FL" list (U1-U7:
+  the Alt Slice Shift line, Paint's leftward round-down after an Alt release, Select
+  Shift+click on empty space, Playback Shift, Slip edge drags, Slice Ctrl/Shift with the
+  right button, Paint's flush resume after a skipped clip with Alt held), each with a matching
+  code comment; no behaviour change.
+- Tests: `test_pressure.lua` no longer expects an undo point when a gesture returns the project to exactly the state of the last undo point (e.g. a Ctrl box re-selecting what a side-effect clear deselected): REAPER drops such a point, so the undo walk lost one step and failed. The summary now counts these ('undo points REAPER dropped'). Test model only; ReaFL unchanged.
+- Tests and tools: no committed absolute box paths (scripts take `REAPER_EXE`, `REAPER_RES`,
+  `PYTHON`, `DISPLAY`); `module_toggle.sh`, `archived_restart.sh`, `remove_reinstall.sh` and
+  `run_dbg.sh` read the log across its 1 MB rotation to `reafl.log.old`; `apply_layout.py`
+  accepts `--check` before or after the directory.
+
+- Tests: the temp test project (`reafl-test.rpp`, also used by `close_tabs.lua` and
+  `quit_reaper.lua`) and the test wavs live in a per-instance directory,
+  `<resource path>/reafl-test-tmp/` (or `$REAFL_TEST_TMP`; helper `tests/tmpdir.lua`), not
+  the shared `/tmp`, so testers running parallel REAPER instances no longer collide.
+- Slice Shift+drag is now FL's slice line (FruitKeeper Q5 b, verified): one undo step cuts
+  every item on every track whose lane centre the line crosses, each at the line's time at
+  that centre; the line's end points snap to the grid (Alt: unsnapped, unverified in FL).
+  Previously it cut only the item under the release point. Alt+click cutting exactly at the
+  pointer (Q5 a) already matched and is now covered by exact-position tests. FL's Shift+press
+  on a clip header (context menu) is not mapped: REAPER items have no header.
+- Mid-drag axis locks (FL, verified): while moving a clip (Draw, Paint) or drawing a new one
+  (Draw, Slip in empty space), Shift pressed after the press keeps it on the track it was on
+  at the Shift press (time follows), Ctrl pressed after the press keeps its time (track
+  follows). Live: releasing the key frees that axis again; both keys freeze both axes, in
+  either order. The mode chosen at the press never changes mid-drag (Shift at the press stays
+  fill/clone, Ctrl at the press stays a selection box). One shared helper
+  (`Gesture::applyLocks`, policy in `lockHeld`).
+- Paint: Shift+drag on a clip makes a pooled clone like Draw. Draw and Paint clones stay on
+  their track while Shift is held and follow the pointer's track once Shift is released.
+  Shift+click on a clip makes a zero-offset pooled clone ("ReaFL: Clone item", one undo step).
+- Paint drags and Draw/Slip Shift fills also fill leftwards from the press: the press slot plus
+  back-to-back slots to its left, each placed once the pointer passes its left edge; existing
+  items are skipped (a slot moves to end at the item). One undo point.
+- Selection after release: a painted fill (Paint click/drag, Draw and Slip Shift fills) ends
+  with exactly its new items selected (inside the fill's own undo step); see "Gestures with
+  an existing selection" below for everything else.
+- Slice: Alt+click cuts, at the pointer, unsnapped (right button: cuts and deletes the
+  pointer's side).
+- Slip: in empty space it now works exactly like Draw; presses on a clip still do nothing.
+- Last touched item (`src/brush/last_touched.*`): ReaFL remembers the item you last worked
+  on in any context, and it is the Draw/Paint brush (still saved per project and in ReaFL's
+  state). It updates on a press on an item in any tool, including the Default tool where
+  REAPER handles the press (recorded at button-down), and on any ReaFL tool press (click,
+  move, resize, clone source, Mute, Slice, Ctrl select), but not on deletes. REAPER's own
+  selection changes (keyboard actions, the item list, scripts) update it when an item becomes
+  selected, as does the MIDI editor's active take, checked on REAPER's timer. Drawn, painted
+  and cloned copies don't replace it, and ReaFL's own selection changes are skipped. A deleted
+  item keeps its saved copy. Test API: `ReaFL_Test_PollTouched`.
+- Tests: new `tests/test_last_touched.lua`; new `tests/test_locks_fill.lua`; `T.undo_select` / `T.SELECT_UNDO` in `lib.lua`;
+  the pressure test also flips Shift/Ctrl mid-drag, covers Slip and checks the selection.
+- Hint text: switching tools sets REAPER's hint text (`Help_Set`) to the active tool
+  ("ReaFL: Draw tool"), and clears it for Default. Note: the bracketed "[ReaFL: Draw item]" in
+  the menu bar is REAPER's own "Show last undo point in menu bar" display (last undo point);
+  an extension cannot rewrite it without adding undo points, so it still shows the last edit.
+- Paint: Ctrl is the shared Ctrl selection like Draw (G7); nothing is painted.
+- Paint: with Alt held at the press and released mid-drag, the next copy re-snaps up to the
+  grid line at or after the previous copy's end, leaving a gap (G13; FL showed 1395 -> 1405 px).
+  Leftwards it rounds down (mirrored; unverified in FL, U2 in `fl-tools-reference.md`). Helper `geometry::snapToward`.
+- Slice: Shift draws an angled preview line (G14), from the press point or, when Shift is
+  pressed mid-drag, from where it went down, to the snapped pointer (new overlay shape
+  `overlay::showSegment`). Both end points are snapped; the cut follows the line (below).
+- Select tool (G8, FL select.md): click selects only the item (empty space: deselect all), a
+  drag is a marquee selecting what it touches, snapped vertically to whole rows; Shift
+  toggles; Alt = plain; Ctrl = the shared Ctrl selection; right = left. One undo point per change
+  (labels: "Selection undo" below).
+  `boxselect::Options` (toggle, clickEmptyClears, rowSnap) shares the box code.
+- Playback tool (G9, FL playback.md): press-hold on an item plays from the pointer, the
+  release stops and returns the edit cursor; Alt = plain; Shift moves the edit cursor to the
+  item start (no playback); Ctrl selects / box-selects; empty space and right button: nothing.
+- Paint Shift single copy (G11): if Shift is released mid-drag the copy goes on the pointer's
+  row instead of the press track; still unselected.
+- Gestures with an existing selection follow FL (open-questions-2.md Q2): in Draw, Paint and
+  Slip a press on an unselected clip or in empty space clears the selection, a click on a
+  selected clip does nothing, and dragging a selected clip moves the whole selection (one
+  "ReaFL: Move item" undo step). Delete removes only the clicked clip and keeps the rest
+  selected; Mute and Slice act on the clicked clip and clear the selection; Playback leaves it.
+  New `tests/test_selection_q2.lua`; `ReaFL_Test_UndoPoints` counts ReaFL's undo points so
+  `test_pressure.lua` can now include Select and Playback.
+- Slip on clips (FL slip.md): dragging a clip body slips its content (the takes' start offsets;
+  position and length stay) in whole grid steps of the drag, rounded (under half a step does
+  nothing); Alt = free; Shift = plain; Ctrl+click selects; edges resize like Draw; the right
+  button deletes. One "ReaFL: Slip item" undo step. New `tests/test_slip.lua`.
+- Batch 1 GUI test follow-ups: Draw/Paint drags of a selected clip move the whole selection
+  (also a Paint fill's or one made outside ReaFL; the mid-drag locks apply to the group);
+  a Ctrl+box or a Mute empty press that leaves the selection as it was makes no undo point.
+  Docs: Shift+click zero-offset clone is implemented; Paint's press slot snaps to the nearest
+  grid line in both directions. New `tests/test_regress_gui.lua`.
+- **Ctrl selection is the same in every tool** (left or right button): Ctrl+drag box-selects (from empty space or from a clip, nothing is edited), in Draw, Paint, Delete, Mute, Slip, Slice, Select and Playback; a Ctrl+click is FL's replacing selection click (below). One handler in the gesture engine (`Tool::ctrlBoxSelect`) replaces the per-tool copies. Each actual selection change is one undo step (labels: "Selection undo" below), none when nothing changed. Before: Ctrl+click selected the clicked item, Select treated Ctrl as plain and the right buttons ignored Ctrl.
+- **Tool icons and cursors:** every tool has its own artwork, redrawn by us with FL's symbols (pencil, brush, ⊘, muted speaker, ↔, knife, selection corners, speaker; an arrow for Default), one SVG per tool in `assets/tools/`. The ReaFL toolbar shows them (normal / mouse-over / active frames, 100/150/200 %), and old text-label buttons are upgraded. Each tool's cursor is made from its icon: white with a black outline so it stays readable over clips, with a hotspot at the pen or brush tip (Draw, Paint), the blade edge (Slice), the box corner (Select), or the centre. Windows gets 32/48/64 px, Linux and macOS 32 px. Mute and Delete no longer share a cursor. Embedded in the binary; `scripts/gen_assets.py` regenerates them.
+- **Paint icon and cursor redrawn** as an FL-style flat paintbrush (ragged bristles at the top left, a fat ferrule, and a handle with a hang hole to the bottom right), so it no longer looks like Draw's pencil. The cursor hotspot is the bristle tip (top left).
+- **Paint fill into an existing clip checked against FL in both directions** (new `test_fill_grid.lua`): the slot that would overlap the clip is skipped and never shortened, the copies stay full length (which may leave a gap), and the fill resumes at the clip's far edge (on the grid: see the Q8 entry below for an off-grid clip). ReaFL already did this, so there is no behaviour change; the leftward rule is no longer marked unverified.
+- **Paint fill resumes on the grid after an off-grid clip (FL Q8, verified both drag directions):** when a fill skips a clip that is off the grid, the next copy now starts at the first grid line at or after the clip's end (leftwards: the next copy ends at the grid line at or before its start) instead of flush with the clip, so the fill stays on the global grid. Overlapping slots are still skipped, the new copies are selected and the fill is one undo step. With Alt held (no snap) it still resumes flush; that case is not tested in FL (U7 in the 'Implemented but unverified in FL' list). New Q8 regression cases in `test_fill_grid.lua`, both directions.
+- **Selection undo follows FL (Q2, Q3).** Only deliberate selection changes (Select tool clicks and marquees, Ctrl click / box selection in any tool) are undo steps; a selection cleared as a side effect of a Draw/Paint/Mute/Slice/Slip gesture makes none. A selection that grows or is toggled (Ctrl+box, Select Shift+click / Shift+marquee, also when they remove clips, a Select click or marquee when nothing was selected) is one "ReaFL: Select items" step. A plain Select click, marquee or empty-space click that replaces, reduces or clears an existing selection, and a replacing Ctrl+click, is one "ReaFL: Deselect items" step. There is no step when nothing changes, and a Draw click in empty space with a selection stays one "Draw item" step that also restores the selection. Both labels come from the single rule in `gestures.cpp` (`selectionUndo`, switch `IMPLICIT_SELECTION_UNDO`); new `test_select_undo.lua`.
+- Tests: the required GUI test layout is the ReaFL toolbar docked at the top of the main
+  window (`modules/reafl/tests/layout/reaper-layout.ini`: `custommenu=13`, `toolbar:header=N-1`,
+  `[toolbar:N] wnd_vis=0`). `modules/reafl/tests/layout/apply_layout.py` applies or checks it;
+  `test_layout.lua` (run first) fails when it is off.
+- **Ctrl+click works exactly like FL (fl-manual/ctrl-click.md).** In Draw, Paint, Delete, Mute, Slip, Slice, Select and Playback a Ctrl+click is a replacing selection click and never the tool's action. Before, it cleared the whole selection. Now a clip with nothing selected becomes the selection (one "ReaFL: Select items" step), and a clip with others selected becomes the only selected clip, whether or not it was selected (one "ReaFL: Deselect items" step). On the only selected clip it stays selected with no step: FL makes a no-op "deselect" step there, which REAPER cannot record. Empty space deselects all (one "Deselect items" step), or does nothing with no step when nothing is selected. Ctrl+drag box-select is unchanged.]]></changelog>
+        <source platform="linux64" file="reaper_reasuite-x86_64.so" hash="122028d0effa512d54e4dc2885fe70f4c8900e3e9cadfdd1f1028c5e8f309daa218d">https://github.com/Aced107/ReaSuite/releases/download/v0.5.0/reaper_reasuite-x86_64.so</source>
+        <source platform="linux-aarch64" file="reaper_reasuite-aarch64.so" hash="1220b7d19a74166c601f622185df318c0fa3e1b62197d1b40284d6f7da506aa11f28">https://github.com/Aced107/ReaSuite/releases/download/v0.5.0/reaper_reasuite-aarch64.so</source>
+        <source platform="win64" file="reaper_reasuite-x64.dll" hash="122022d618e73a143a2098dd6de9b00312f141d67de3e9493c507a5456a5b424d5bf">https://github.com/Aced107/ReaSuite/releases/download/v0.5.0/reaper_reasuite-x64.dll</source>
+      </version>
+    </reapack>
+  </category>
+  <metadata>
+    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin}: Windows only, coming soon (greyed out on macOS and Linux).\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
+    <link rel="website">https://github.com/Aced107/ReaSuite</link>
+  </metadata>
+</index>
