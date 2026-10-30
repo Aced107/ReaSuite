@@ -3,7 +3,7 @@
   <category name="Extensions">
     <reapack name="ReaSuite" type="extension" desc="ReaSuite: ReaFL (FL Studio Playlist tools) and more modules in one extension">
       <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin}: Windows only, coming soon (greyed out on macOS and Linux).\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin} (Windows, off by default): macOS dark look for menus, dialogs and lists, plus matching ReaSkin themes, Colored and Dark (installed to ColorThemes; pick the style in the module's Settings). On Linux and macOS the module is listed as (Windows only), but the two themes are installed to ColorThemes too, with ReaSkin.libSwell-user.colortheme: copy that to the REAPER resource folder as libSwell-user.colortheme (back up an existing one) and restart, then load a ReaSkin theme.\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
         <link rel="website">https://github.com/Aced107/ReaSuite</link>
       </metadata>
       <version name="0.5.0" author="Armaan" time="2026-10-30T18:29:13Z">
@@ -205,10 +205,44 @@
         <source platform="linux-aarch64" file="reaper_reasuite-aarch64.so" hash="1220b7d19a74166c601f622185df318c0fa3e1b62197d1b40284d6f7da506aa11f28">https://github.com/Aced107/ReaSuite/releases/download/v0.5.0/reaper_reasuite-aarch64.so</source>
         <source platform="win64" file="reaper_reasuite-x64.dll" hash="122022d618e73a143a2098dd6de9b00312f141d67de3e9493c507a5456a5b424d5bf">https://github.com/Aced107/ReaSuite/releases/download/v0.5.0/reaper_reasuite-x64.dll</source>
       </version>
+      <version name="0.5.1" author="Armaan" time="2026-10-30T18:44:01Z">
+        <changelog><![CDATA[### ReaSkin (shipped as a work in progress)
+
+- ReaSkin is now a real module instead of the "coming soon" placeholder. **Windows:** turn it on in
+  *Extensions > ReaSuite Settings* (off by default; takes effect after a restart). It restyles the
+  Windows-drawn UI (menus, menu bar, title bars, dialogs, lists, scroll bars, font) and loads the
+  matching REAPER theme; **Settings...** next to it picks the style, Colored (default) or Dark, and
+  switches live. Action "ReaSkin: Toggle styling" turns the restyling off or on at once.
+- ReaPack installs the two themes, `ReaSkin-Colored.ReaperThemeZip` and `ReaSkin-Dark.ReaperThemeZip`,
+  into `ColorThemes` on every platform.
+- **Linux and macOS:** the module is listed as "ReaSkin (Windows only)". The themes still work: load
+  one by hand (Options > Themes). For dialogs and lists to match, copy
+  `ColorThemes/ReaSkin.libSwell-user.colortheme` to the REAPER resource folder as
+  `libSwell-user.colortheme` (back up an existing one first) and restart REAPER.
+- Known open issues in the theme: the mixer (MCP) button column can clip, Dark meters are too bright,
+  the armed meter background is a solid slab, and 150%/200% scaling is unchecked.
+
+### ReaFL
+
+- Paint: dragging left to right, the next copy now appears about half a grid step before the mouse
+  reaches its slot, as in FL (right to left unchanged).
+- README: the Ctrl selection and Selection undo notes no longer mention the archived Select tool.]]></changelog>
+        <source platform="linux64" file="reaper_reasuite-x86_64.so" hash="12205fd8d42bfaecd4f8056bbcc7e1b2bf617bb62185b49b462bd97de761f39503bd">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/reaper_reasuite-x86_64.so</source>
+        <source platform="linux64" type="theme" file="ReaSkin-Colored.ReaperThemeZip" hash="12207f13adb4a0f14473813adaa4ac06d9ab6d04de411e38395c53417a12e1e4c19b">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin-Colored.ReaperThemeZip</source>
+        <source platform="linux64" type="theme" file="ReaSkin-Dark.ReaperThemeZip" hash="1220e081d34d0bda289393e4e2f4498b26f9f4e78b2f59b1a24e4c064665dbaeaa60">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin-Dark.ReaperThemeZip</source>
+        <source platform="linux64" type="theme" file="ReaSkin.libSwell-user.colortheme" hash="122050942d927b04e9bfff644d496192c231ff55e4110a7dd08171a82d91b5ffb248">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin.libSwell-user.colortheme</source>
+        <source platform="linux-aarch64" file="reaper_reasuite-aarch64.so" hash="122059cc80f0953d3e52340b05c0ef5c5b6ad7b9e218b289462f18421952251c9a2f">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/reaper_reasuite-aarch64.so</source>
+        <source platform="linux-aarch64" type="theme" file="ReaSkin-Colored.ReaperThemeZip" hash="12207f13adb4a0f14473813adaa4ac06d9ab6d04de411e38395c53417a12e1e4c19b">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin-Colored.ReaperThemeZip</source>
+        <source platform="linux-aarch64" type="theme" file="ReaSkin-Dark.ReaperThemeZip" hash="1220e081d34d0bda289393e4e2f4498b26f9f4e78b2f59b1a24e4c064665dbaeaa60">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin-Dark.ReaperThemeZip</source>
+        <source platform="linux-aarch64" type="theme" file="ReaSkin.libSwell-user.colortheme" hash="122050942d927b04e9bfff644d496192c231ff55e4110a7dd08171a82d91b5ffb248">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin.libSwell-user.colortheme</source>
+        <source platform="win64" file="reaper_reasuite-x64.dll" hash="1220c9a31e68e0d39f79fe26146d4f2a5618323f9892e4967eb7c25fc98746bd11db">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/reaper_reasuite-x64.dll</source>
+        <source platform="win64" type="theme" file="ReaSkin-Colored.ReaperThemeZip" hash="12207f13adb4a0f14473813adaa4ac06d9ab6d04de411e38395c53417a12e1e4c19b">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin-Colored.ReaperThemeZip</source>
+        <source platform="win64" type="theme" file="ReaSkin-Dark.ReaperThemeZip" hash="1220e081d34d0bda289393e4e2f4498b26f9f4e78b2f59b1a24e4c064665dbaeaa60">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin-Dark.ReaperThemeZip</source>
+      </version>
     </reapack>
   </category>
   <metadata>
-    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin}: Windows only, coming soon (greyed out on macOS and Linux).\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
+    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin} (Windows, off by default): macOS dark look for menus, dialogs and lists, plus matching ReaSkin themes, Colored and Dark (installed to ColorThemes; pick the style in the module's Settings). On Linux and macOS the module is listed as (Windows only), but the two themes are installed to ColorThemes too, with ReaSkin.libSwell-user.colortheme: copy that to the REAPER resource folder as libSwell-user.colortheme (back up an existing one) and restart, then load a ReaSkin theme.\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
     <link rel="website">https://github.com/Aced107/ReaSuite</link>
   </metadata>
 </index>
