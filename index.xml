@@ -3,7 +3,7 @@
   <category name="Extensions">
     <reapack name="ReaSuite" type="extension" desc="ReaSuite: ReaFL (FL Studio Playlist tools) and more modules in one extension">
       <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin} (Windows, off by default): macOS dark look for menus, dialogs and lists, plus matching ReaSkin themes, Colored and Dark (installed to ColorThemes; pick the style in the module's Settings). On Linux and macOS the module is listed as (Windows only), but the two themes are installed to ColorThemes too, with ReaSkin.libSwell-user.colortheme: copy that to the REAPER resource folder as libSwell-user.colortheme (back up an existing one) and restart, then load a ReaSkin theme.\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin} (Windows and Linux, off by default): macOS dark look for menus, dialogs and lists, plus matching ReaSkin themes, Colored and Dark (installed to ColorThemes; pick the style in the module's Settings). On Linux it installs its SWELL colour theme as libSwell-user.colortheme when none exists (never overwriting one). On macOS the module is listed as (Windows only), but the two themes are installed to ColorThemes too, with ReaSkin.libSwell-user.colortheme: copy that to the REAPER resource folder as libSwell-user.colortheme (back up an existing one) and restart, then load a ReaSkin theme.\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
         <link rel="website">https://github.com/Aced107/ReaSuite</link>
       </metadata>
       <version name="0.5.0" author="Armaan" time="2026-10-30T18:29:13Z">
@@ -239,10 +239,104 @@
         <source platform="win64" type="theme" file="ReaSkin-Colored.ReaperThemeZip" hash="12207f13adb4a0f14473813adaa4ac06d9ab6d04de411e38395c53417a12e1e4c19b">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin-Colored.ReaperThemeZip</source>
         <source platform="win64" type="theme" file="ReaSkin-Dark.ReaperThemeZip" hash="1220e081d34d0bda289393e4e2f4498b26f9f4e78b2f59b1a24e4c064665dbaeaa60">https://github.com/Aced107/ReaSuite/releases/download/v0.5.1/ReaSkin-Dark.ReaperThemeZip</source>
       </version>
+      <version name="0.6.0" author="Armaan" time="2026-11-01T02:37:08Z">
+        <changelog><![CDATA[Changes since 0.5.1 (3986dd7).
+
+### FL Sync (new module, off by default; Windows)
+
+- Enable it in ReaSuite Settings, then restart REAPER. Works with the FL Studio VSTi.
+- FL Studio VSTi window fix: FL gets its own hidden owner window, so REAPER keeps its keyboard
+  shortcuts and taskbar button (also for a second FL instance).
+- Optional output count: FL Studio VSTi (Multi) with 1-64 stereo outputs, set on the FL Sync
+  settings page (restart REAPER and rescan the plugin after changing it).
+- Action "FLSync: Play from FL Studio position" (toggle): starts REAPER from FL's playhead;
+  while playing, stops both and rewinds FL.
+
+### ReaSkin
+
+- Theme v3 layout pass 3 (theme repo reaskin-layout 1a45b71).
+ The Windows ReaSkin changes below have no Windows test evidence yet
+(see `modules/reaskin/docs/WINDOWS-CHECKS.md`).
+
+### Core
+
+- Dialogs size to their content: ReaSuite Settings, Timeline Interactions and ReaSkin's settings share
+  one measured layout (95ce7dd); the layout builds with SWELL again (bb83768).
+- CI: Windows x64 MSVC build (`windows-msvc.yml`), checking that ReaSkin compiles with /EHa (7d657e6).
+
+### ReaFL
+
+- Paint: Shift+drag shows its single clip live, following the pointer Draw-style, and ends at the
+  release point (0e41fce).
+- Fix: a Paint fill (or Draw Shift+drag) with a near-zero brush (a MIDI item shorter than 10 ms) froze
+  REAPER by placing thousands of copies per mouse move. Such a brush now places only the press copy
+  (fl-tools-reference U8).
+- Fix: a long Paint fill (or Draw Shift+drag) with a short brush cost time quadratic in its copies
+  (each copy rescanned the track, the end of the fill checked every copy project-wide): an 11 ms
+  brush over one 58 s move froze REAPER for 30 s. The track is now scanned once per fill, a move's
+  copies are placed in one batch (one UI refresh) with their start set in the item chunk, and the
+  selection pass is linear. At most 2048 copies are placed per move (the rest follow on the next
+  move, and the release places what is left in batches of 2048, so the whole stroke is always
+  filled, in one undo step; fl-tools-reference U9). The 58 s move now takes 0.3 s and its release
+  5.2 s for the remaining 3221 copies (REAPER's cost per added item grows with the track's item
+  count); normal brushes are unchanged.
+
+### ReaSkin
+
+- **Windows:** dialogs, menus, lists, headers, buttons, combos, edits, tabs, focus rings, progress bars and
+  trackbars on one palette and geometry shared with the theme (v3 tokens, one selection colour, one
+  disabled-text colour); custom macOS-style caption (traffic lights left, REAPER's pin kept); docker
+  tab glyphs; REAPER's own dialog templates rebuilt in the Body font role; every font from four type
+  roles, created greyscale-antialiased; docker tab titles on the type scale (reaper.exe gdi32
+  CreateFont* patched while a tab control draws); per-user Inter font install (opt-out
+  `install_fonts=0`, action "ReaSkin: Remove installed Inter fonts").
+- Themes: v3 batches, mixer button grouping, hidpi sets (125-200%), Inter fonts, icon batches 1-9;
+  a ReaSkin Theme Adjuster zip.
+- **Linux:** ReaSkin is now available (off by default) instead of "ReaSkin (Windows only)": it installs
+  its SWELL colour theme as `libSwell-user.colortheme` when none exists, never overwriting one (e3536c9).
+  The 0.5.1 note below about copying the colortheme by hand still applies to macOS.
+- **Windows:** import-hook unhook order (gdi32 CreateFont* and the user32 dialog hooks): when another
+  extension has chained its own hook on top of ReaSkin's, ReaSkin no longer restores the import on
+  unload (that would cut the other hook off); the dll stays loaded (pinned) and does not re-patch in
+  that session (062d586, `modules/reaskin/docs/PLATFORM-HOOKS.md`).
+
+### Tests
+
+- The automated suite skips, with a logged SKIP note, every check of a tool whose action is not
+  registered (Slip, Select, Playback, Zoom, archived in 0.5.0) instead of running it against the active
+  tool. Slice tests expect Shift+click / Shift+drag to be a plain cut while the diagonal slice is skipped.
+- `module_toggle.sh` expects ReaSkin off by default ("disabled") outside macOS; `archived_restart.sh`
+  expects all four archived tools (Zoom, Slip, Select, Playback) cleaned up, not Zoom alone.
+- `archived_restart.sh` finds a ReaScript console window with `xdotool search` (wmctrl sees no windows
+  without a window manager, so the check could not fail). `test_draw_paint.lua` adds 11 ms brush
+  fills (a 20 s fill in 10 moves under 2 s; one 58 s move plus release = the full row, one undo step)
+  next to the near-zero brush test.
+
+### Known issues
+
+- ReaFL Slice: a diagonal or horizontal Shift+drag does nothing (no cut, no undo point), while a
+  near-vertical one cuts at the press x. Intended: a plain cut at the press x at any angle (the FL
+  slice line is skipped, `kDiagonalSliceSkipped`, a0837cc). Deferred while ReaFL is paused.]]></changelog>
+        <source platform="win64" file="reaper_reasuite-x64.dll" hash="1220205856d3a08b7a4d01182869f3a2b56092d8ac7665438ae86833c3afa64abc95">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/reaper_reasuite-x64.dll</source>
+        <source platform="win64" type="theme" file="ReaSkin-Colored.ReaperThemeZip" hash="12209f6698025768ff10e2bab1003646217e03603c13ca3a47789d5dcdd2be64a642">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin-Colored.ReaperThemeZip</source>
+        <source platform="win64" type="theme" file="ReaSkin-Dark.ReaperThemeZip" hash="1220203787184b0878b5def6e4bf48fa5548c59db7d65aae1de08c0ac05e7d832715">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin-Dark.ReaperThemeZip</source>
+        <source platform="darwin" file="reaper_reasuite.dylib" hash="12208e69728b39de8ace6c8cff71e9b52c7a0736c57c4dc327e74bf803afa4ec19c4">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/reaper_reasuite.dylib</source>
+        <source platform="darwin" type="theme" file="ReaSkin-Colored.ReaperThemeZip" hash="12209f6698025768ff10e2bab1003646217e03603c13ca3a47789d5dcdd2be64a642">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin-Colored.ReaperThemeZip</source>
+        <source platform="darwin" type="theme" file="ReaSkin-Dark.ReaperThemeZip" hash="1220203787184b0878b5def6e4bf48fa5548c59db7d65aae1de08c0ac05e7d832715">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin-Dark.ReaperThemeZip</source>
+        <source platform="darwin" type="theme" file="ReaSkin.libSwell-user.colortheme" hash="1220ddc37a59c3693c32a8b7c71fd2feec06b48aa3eb4c2d33e98ab24aceb4671bf8">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin.libSwell-user.colortheme</source>
+        <source platform="linux64" file="reaper_reasuite-x86_64.so" hash="122032ec642902264c0ae3acd7acf623cd73f91567715c741be6014386b06732f08f">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/reaper_reasuite-x86_64.so</source>
+        <source platform="linux64" type="theme" file="ReaSkin-Colored.ReaperThemeZip" hash="12209f6698025768ff10e2bab1003646217e03603c13ca3a47789d5dcdd2be64a642">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin-Colored.ReaperThemeZip</source>
+        <source platform="linux64" type="theme" file="ReaSkin-Dark.ReaperThemeZip" hash="1220203787184b0878b5def6e4bf48fa5548c59db7d65aae1de08c0ac05e7d832715">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin-Dark.ReaperThemeZip</source>
+        <source platform="linux64" type="theme" file="ReaSkin.libSwell-user.colortheme" hash="1220ddc37a59c3693c32a8b7c71fd2feec06b48aa3eb4c2d33e98ab24aceb4671bf8">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin.libSwell-user.colortheme</source>
+        <source platform="linux-aarch64" file="reaper_reasuite-aarch64.so" hash="1220c9aaeb4bd18153b9e5f5d4f76046e95c5d83a520f01abe7a6b640dfc214a9b1c">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/reaper_reasuite-aarch64.so</source>
+        <source platform="linux-aarch64" type="theme" file="ReaSkin-Colored.ReaperThemeZip" hash="12209f6698025768ff10e2bab1003646217e03603c13ca3a47789d5dcdd2be64a642">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin-Colored.ReaperThemeZip</source>
+        <source platform="linux-aarch64" type="theme" file="ReaSkin-Dark.ReaperThemeZip" hash="1220203787184b0878b5def6e4bf48fa5548c59db7d65aae1de08c0ac05e7d832715">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin-Dark.ReaperThemeZip</source>
+        <source platform="linux-aarch64" type="theme" file="ReaSkin.libSwell-user.colortheme" hash="1220ddc37a59c3693c32a8b7c71fd2feec06b48aa3eb4c2d33e98ab24aceb4671bf8">https://github.com/Aced107/ReaSuite/releases/download/v0.6.0/ReaSkin.libSwell-user.colortheme</source>
+      </version>
     </reapack>
   </category>
   <metadata>
-    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin} (Windows, off by default): macOS dark look for menus, dialogs and lists, plus matching ReaSkin themes, Colored and Dark (installed to ColorThemes; pick the style in the module's Settings). On Linux and macOS the module is listed as (Windows only), but the two themes are installed to ColorThemes too, with ReaSkin.libSwell-user.colortheme: copy that to the REAPER resource folder as libSwell-user.colortheme (back up an existing one) and restart, then load a ReaSkin theme.\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
+    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0\fswiss Helvetica;}}\f0\fs20{\b\fs28 ReaSuite}\par One REAPER extension with switchable modules. Turn modules on or off in {\i Extensions > ReaSuite Settings...} (takes effect after a restart).\par\par{\b Modules:}\par\bullet  {\b ReaFL} (on by default): FL Studio Playlist tools in the arrange view: Draw, Paint, Delete, Mute and Slice, with a docked toolbar and shortcuts (added on first start; keys you already use are left alone).\par\bullet  {\b ReaSkin} (Windows and Linux, off by default): macOS dark look for menus, dialogs and lists, plus matching ReaSkin themes, Colored and Dark (installed to ColorThemes; pick the style in the module's Settings). On Linux it installs its SWELL colour theme as libSwell-user.colortheme when none exists (never overwriting one). On macOS the module is listed as (Windows only), but the two themes are installed to ColorThemes too, with ReaSkin.libSwell-user.colortheme: copy that to the REAPER resource folder as libSwell-user.colortheme (back up an existing one) and restart, then load a ReaSkin theme.\par\par{\b Upgrading from the ReaFL package:} uninstall the ReaFL package in ReaPack, then restart. Your ReaFL shortcuts, toolbar and settings keep working (same action IDs; the archived Zoom, Slip, Select and Playback tools are removed; same reaper-reafl.ini). If both are installed, ReaSuite leaves ReaFL to the old package and says so once per start.\par\par{\b Requirements:} REAPER 7 (tested on 7.84). No other extensions needed.\par}]]></description>
     <link rel="website">https://github.com/Aced107/ReaSuite</link>
   </metadata>
 </index>
